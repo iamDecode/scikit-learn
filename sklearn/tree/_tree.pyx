@@ -67,6 +67,14 @@ cdef SIZE_t _TREE_UNDEFINED = TREE_UNDEFINED
 cdef SIZE_t INITIAL_STACK_SIZE = 10
 
 # Repeat struct definition for numpy
+# NOTE: SPLITVALUE_DTYPE cannot be used with numpy < v1.7
+# Recommend replacing threshold with it when support for v1.6 is dropped
+
+##SPLITVALUE_DTYPE = np.dtype({
+##    'names': ['threshold', 'cat_split'],
+##    'formats': [np.float64, np.uint64],
+##    'offsets': [0, 0]
+##})
 NODE_DTYPE = np.dtype({
     'names': ['left_child', 'right_child', 'feature', 'threshold', 'impurity',
               'n_node_samples', 'weighted_n_node_samples'],
@@ -76,7 +84,7 @@ NODE_DTYPE = np.dtype({
         <Py_ssize_t> &(<Node*> NULL).left_child,
         <Py_ssize_t> &(<Node*> NULL).right_child,
         <Py_ssize_t> &(<Node*> NULL).feature,
-        <Py_ssize_t> &(<Node*> NULL).threshold,
+        <Py_ssize_t> &(<Node*> NULL).split_value,
         <Py_ssize_t> &(<Node*> NULL).impurity,
         <Py_ssize_t> &(<Node*> NULL).n_node_samples,
         <Py_ssize_t> &(<Node*> NULL).weighted_n_node_samples
@@ -187,7 +195,6 @@ cdef class DepthFirstTreeBuilder(TreeBuilder):
         cdef SplitRecord split
         cdef SIZE_t node_id
 
-        cdef double threshold
         cdef double impurity = INFINITY
         cdef SIZE_t n_constant_features
         cdef bint is_leaf
@@ -242,7 +249,7 @@ cdef class DepthFirstTreeBuilder(TreeBuilder):
                                 min_impurity_decrease))
 
                 node_id = tree._add_node(parent, is_left, is_leaf, split.feature,
-                                         split.threshold, impurity, n_node_samples,
+                                         split.split_value.threshold, impurity, n_node_samples,
                                          weighted_n_node_samples)
 
                 if node_id == <SIZE_t>(-1):
@@ -374,7 +381,7 @@ cdef class BestFirstTreeBuilder(TreeBuilder):
                     node.left_child = _TREE_LEAF
                     node.right_child = _TREE_LEAF
                     node.feature = _TREE_UNDEFINED
-                    node.threshold = _TREE_UNDEFINED
+                    node.split_value.threshold = _TREE_UNDEFINED
 
                 else:
                     # Node is expandable
@@ -467,7 +474,7 @@ cdef class BestFirstTreeBuilder(TreeBuilder):
                                  if parent != NULL
                                  else _TREE_UNDEFINED,
                                  is_left, is_leaf,
-                                 split.feature, split.threshold, impurity, n_node_samples,
+                                 split.feature, split.split_value.threshold, impurity, n_node_samples,
                                  weighted_n_node_samples)
         if node_id == <SIZE_t>(-1):
             return -1
@@ -764,12 +771,12 @@ cdef class Tree:
             node.left_child = _TREE_LEAF
             node.right_child = _TREE_LEAF
             node.feature = _TREE_UNDEFINED
-            node.threshold = _TREE_UNDEFINED
+            node.split_value.threshold = _TREE_UNDEFINED
 
         else:
             # left_child and right_child will be set later
             node.feature = feature
-            node.threshold = threshold
+            node.split_value.threshold = threshold
 
         self.node_count += 1
 
@@ -823,7 +830,7 @@ cdef class Tree:
                 while node.left_child != _TREE_LEAF:
                     # ... and node.right_child != _TREE_LEAF:
                     if X_ptr[X_sample_stride * i +
-                             X_fx_stride * node.feature] <= node.threshold:
+                             X_fx_stride * node.feature] <= node.split_value.threshold:
                         node = &self.nodes[node.left_child]
                     else:
                         node = &self.nodes[node.right_child]
@@ -894,7 +901,7 @@ cdef class Tree:
                     else:
                         feature_value = 0.
 
-                    if feature_value <= node.threshold:
+                    if feature_value <= node.split_value.threshold:
                         node = &self.nodes[node.left_child]
                     else:
                         node = &self.nodes[node.right_child]
@@ -957,7 +964,7 @@ cdef class Tree:
                     indptr_ptr[i + 1] += 1
 
                     if X_ptr[X_sample_stride * i +
-                             X_fx_stride * node.feature] <= node.threshold:
+                             X_fx_stride * node.feature] <= node.split_value.threshold:
                         node = &self.nodes[node.left_child]
                     else:
                         node = &self.nodes[node.right_child]
@@ -1045,7 +1052,7 @@ cdef class Tree:
                     else:
                         feature_value = 0.
 
-                    if feature_value <= node.threshold:
+                    if feature_value <= node.split_value.threshold:
                         node = &self.nodes[node.left_child]
                     else:
                         node = &self.nodes[node.right_child]
