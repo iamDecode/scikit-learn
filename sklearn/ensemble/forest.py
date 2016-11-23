@@ -858,6 +858,16 @@ class RandomForestClassifier(ForestClassifier):
            ``min_impurity_split`` will change from 1e-7 to 0 in 0.23 and it
            will be removed in 0.25. Use ``min_impurity_decrease`` instead.
 
+    categorical : array-like or str
+        Array of feature indices, boolean array of length n_features,
+        ``'all'`` or ``'none'``. Indicates which features should be
+        considered as categorical rather than ordinal. For decision trees,
+        the maximum number of categories is 64. In practice, the limit will
+        often be lower because the process of searching for the best possible
+        split grows exponentially with the number of categories. However, a
+        shortcut due to Breiman (1984) is used when fitting data with binary
+        labels using the ``Gini`` or ``Entropy`` criteria. In this case,
+        the runtime is linear in the number of categories.
 
     bootstrap : boolean, optional (default=True)
         Whether bootstrap samples are used when building trees. If False, the
@@ -955,12 +965,13 @@ class RandomForestClassifier(ForestClassifier):
     >>> clf = RandomForestClassifier(n_estimators=100, max_depth=2,
     ...                              random_state=0)
     >>> clf.fit(X, y)  # doctest: +NORMALIZE_WHITESPACE
-    RandomForestClassifier(bootstrap=True, class_weight=None, criterion='gini',
-                max_depth=2, max_features='auto', max_leaf_nodes=None,
-                min_impurity_decrease=0.0, min_impurity_split=None,
-                min_samples_leaf=1, min_samples_split=2,
-                min_weight_fraction_leaf=0.0, n_estimators=100, n_jobs=None,
-                oob_score=False, random_state=0, verbose=0, warm_start=False)
+    RandomForestClassifier(bootstrap=True, categorical='none', class_weight=None,
+                           criterion='gini', max_depth=2, max_features='auto',
+                           max_leaf_nodes=None, min_impurity_decrease=0.0,
+                           min_impurity_split=None, min_samples_leaf=1,
+                           min_samples_split=2, min_weight_fraction_leaf=0.0,
+                           n_estimators=100, n_jobs=None, oob_score=False,
+                           random_state=0, verbose=0, warm_start=False)
     >>> print(clf.feature_importances_)
     [0.14205973 0.76664038 0.0282433  0.06305659]
     >>> print(clf.predict([[0, 0, 0, 0]]))
@@ -1001,6 +1012,7 @@ class RandomForestClassifier(ForestClassifier):
                  max_leaf_nodes=None,
                  min_impurity_decrease=0.,
                  min_impurity_split=None,
+                 categorical="none",
                  bootstrap=True,
                  oob_score=False,
                  n_jobs=None,
@@ -1015,7 +1027,7 @@ class RandomForestClassifier(ForestClassifier):
                               "min_samples_leaf", "min_weight_fraction_leaf",
                               "max_features", "max_leaf_nodes",
                               "min_impurity_decrease", "min_impurity_split",
-                              "random_state"),
+                              "random_state", "categorical"),
             bootstrap=bootstrap,
             oob_score=oob_score,
             n_jobs=n_jobs,
@@ -1033,6 +1045,7 @@ class RandomForestClassifier(ForestClassifier):
         self.max_leaf_nodes = max_leaf_nodes
         self.min_impurity_decrease = min_impurity_decrease
         self.min_impurity_split = min_impurity_split
+        self.categorical = categorical
 
 
 class RandomForestRegressor(ForestRegressor):
@@ -1150,6 +1163,17 @@ class RandomForestRegressor(ForestRegressor):
            ``min_impurity_split`` will change from 1e-7 to 0 in 0.23 and it
            will be removed in 0.25. Use ``min_impurity_decrease`` instead.
 
+    categorical : array-like or str
+        Array of feature indices, boolean array of length n_features,
+        ``'all'`` or ``'none'``. Indicates which features should be
+        considered as categorical rather than ordinal. For decision trees,
+        the maximum number of categories is 64. In practice, the limit will
+        often be lower because the process of searching for the best possible
+        split grows exponentially with the number of categories. However, a
+        shortcut due to Breiman (1984) is used when fitting data with binary
+        labels using the ``Gini`` or ``Entropy`` criteria. In this case,
+        the runtime is linear in the number of categories.
+
     bootstrap : boolean, optional (default=True)
         Whether bootstrap samples are used when building trees. If False, the
         whole datset is used to build each tree.
@@ -1208,12 +1232,13 @@ class RandomForestRegressor(ForestRegressor):
     >>> regr = RandomForestRegressor(max_depth=2, random_state=0,
     ...                              n_estimators=100)
     >>> regr.fit(X, y)  # doctest: +NORMALIZE_WHITESPACE
-    RandomForestRegressor(bootstrap=True, criterion='mse', max_depth=2,
-               max_features='auto', max_leaf_nodes=None,
-               min_impurity_decrease=0.0, min_impurity_split=None,
-               min_samples_leaf=1, min_samples_split=2,
-               min_weight_fraction_leaf=0.0, n_estimators=100, n_jobs=None,
-               oob_score=False, random_state=0, verbose=0, warm_start=False)
+    RandomForestRegressor(bootstrap=True, categorical='none', criterion='mse',
+                          max_depth=2, max_features='auto', max_leaf_nodes=None,
+                          min_impurity_decrease=0.0, min_impurity_split=None,
+                          min_samples_leaf=1, min_samples_split=2,
+                          min_weight_fraction_leaf=0.0, n_estimators=100,
+                          n_jobs=None, oob_score=False, random_state=0, verbose=0,
+                          warm_start=False)
     >>> print(regr.feature_importances_)
     [0.18146984 0.81473937 0.00145312 0.00233767]
     >>> print(regr.predict([[0, 0, 0, 0]]))
@@ -1261,6 +1286,7 @@ class RandomForestRegressor(ForestRegressor):
                  max_leaf_nodes=None,
                  min_impurity_decrease=0.,
                  min_impurity_split=None,
+                 categorical="none",
                  bootstrap=True,
                  oob_score=False,
                  n_jobs=None,
@@ -1274,7 +1300,7 @@ class RandomForestRegressor(ForestRegressor):
                               "min_samples_leaf", "min_weight_fraction_leaf",
                               "max_features", "max_leaf_nodes",
                               "min_impurity_decrease", "min_impurity_split",
-                              "random_state"),
+                              "random_state", "categorical"),
             bootstrap=bootstrap,
             oob_score=oob_score,
             n_jobs=n_jobs,
@@ -1291,6 +1317,7 @@ class RandomForestRegressor(ForestRegressor):
         self.max_leaf_nodes = max_leaf_nodes
         self.min_impurity_decrease = min_impurity_decrease
         self.min_impurity_split = min_impurity_split
+        self.categorical = categorical
 
 
 class ExtraTreesClassifier(ForestClassifier):
@@ -1400,6 +1427,13 @@ class ExtraTreesClassifier(ForestClassifier):
            ``min_impurity_decrease`` in 0.19. The default value of
            ``min_impurity_split`` will change from 1e-7 to 0 in 0.23 and it
            will be removed in 0.25. Use ``min_impurity_decrease`` instead.
+
+    categorical : array-like or str
+        Array of feature indices, boolean array of length n_features,
+        ``'all'`` or ``'none'``. Indicates which features should be
+        considered as categorical rather than ordinal. Extra-random trees
+        have an upper limit of :math:`2^{31}` categories, and runtimes
+        linear in the number of categories.
 
     bootstrap : boolean, optional (default=False)
         Whether bootstrap samples are used when building trees. If False, the
@@ -1516,6 +1550,7 @@ class ExtraTreesClassifier(ForestClassifier):
                  max_leaf_nodes=None,
                  min_impurity_decrease=0.,
                  min_impurity_split=None,
+                 categorical="none",
                  bootstrap=False,
                  oob_score=False,
                  n_jobs=None,
@@ -1530,7 +1565,7 @@ class ExtraTreesClassifier(ForestClassifier):
                               "min_samples_leaf", "min_weight_fraction_leaf",
                               "max_features", "max_leaf_nodes",
                               "min_impurity_decrease", "min_impurity_split",
-                              "random_state"),
+                              "random_state", "categorical"),
             bootstrap=bootstrap,
             oob_score=oob_score,
             n_jobs=n_jobs,
@@ -1548,6 +1583,7 @@ class ExtraTreesClassifier(ForestClassifier):
         self.max_leaf_nodes = max_leaf_nodes
         self.min_impurity_decrease = min_impurity_decrease
         self.min_impurity_split = min_impurity_split
+        self.categorical = categorical
 
 
 class ExtraTreesRegressor(ForestRegressor):
@@ -1663,6 +1699,13 @@ class ExtraTreesRegressor(ForestRegressor):
            ``min_impurity_split`` will change from 1e-7 to 0 in 0.23 and it
            will be removed in 0.25. Use ``min_impurity_decrease`` instead.
 
+    categorical : array-like or str
+        Array of feature indices, boolean array of length n_features,
+        ``'all'`` or ``'none'``. Indicates which features should be
+        considered as categorical rather than ordinal. Extra-random trees
+        have an upper limit of :math:`2^{31}` categories, and runtimes
+        linear in the number of categories.
+
     bootstrap : boolean, optional (default=False)
         Whether bootstrap samples are used when building trees. If False, the
         whole datset is used to build each tree.
@@ -1740,6 +1783,7 @@ class ExtraTreesRegressor(ForestRegressor):
                  max_leaf_nodes=None,
                  min_impurity_decrease=0.,
                  min_impurity_split=None,
+                 categorical="none",
                  bootstrap=False,
                  oob_score=False,
                  n_jobs=None,
@@ -1753,7 +1797,7 @@ class ExtraTreesRegressor(ForestRegressor):
                               "min_samples_leaf", "min_weight_fraction_leaf",
                               "max_features", "max_leaf_nodes",
                               "min_impurity_decrease", "min_impurity_split",
-                              "random_state"),
+                              "random_state", "categorical"),
             bootstrap=bootstrap,
             oob_score=oob_score,
             n_jobs=n_jobs,
@@ -1770,6 +1814,7 @@ class ExtraTreesRegressor(ForestRegressor):
         self.max_leaf_nodes = max_leaf_nodes
         self.min_impurity_decrease = min_impurity_decrease
         self.min_impurity_split = min_impurity_split
+        self.categorical = categorical
 
 
 class RandomTreesEmbedding(BaseForest):
@@ -1865,6 +1910,13 @@ class RandomTreesEmbedding(BaseForest):
            ``min_impurity_split`` will change from 1e-7 to 0 in 0.23 and it
            will be removed in 0.25. Use ``min_impurity_decrease`` instead.
 
+    categorical : array-like or str
+        Array of feature indices, boolean array of length n_features,
+        ``'all'`` or ``'none'``. Indicates which features should be
+        considered as categorical rather than ordinal. Extra-random trees
+        have an upper limit of :math:`2^{31}` categories, and runtimes
+        linear in the number of categories.
+
     sparse_output : bool, optional (default=True)
         Whether or not to return a sparse CSR matrix, as default behavior,
         or to return a dense array compatible with dense pipeline operators.
@@ -1916,6 +1968,7 @@ class RandomTreesEmbedding(BaseForest):
                  max_leaf_nodes=None,
                  min_impurity_decrease=0.,
                  min_impurity_split=None,
+                 categorical="none",
                  sparse_output=True,
                  n_jobs=None,
                  random_state=None,
@@ -1928,7 +1981,7 @@ class RandomTreesEmbedding(BaseForest):
                               "min_samples_leaf", "min_weight_fraction_leaf",
                               "max_features", "max_leaf_nodes",
                               "min_impurity_decrease", "min_impurity_split",
-                              "random_state"),
+                              "random_state", "categorical"),
             bootstrap=False,
             oob_score=False,
             n_jobs=n_jobs,
@@ -1944,6 +1997,7 @@ class RandomTreesEmbedding(BaseForest):
         self.min_impurity_decrease = min_impurity_decrease
         self.min_impurity_split = min_impurity_split
         self.sparse_output = sparse_output
+        self.categorical = categorical
 
     def _set_oob_score(self, X, y):
         raise NotImplementedError("OOB score not supported by tree embedding")
