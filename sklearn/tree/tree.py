@@ -349,6 +349,12 @@ class BaseDecisionTree(BaseEstimator, metaclass=ABCMeta):
             else:
                 criterion = CRITERIA_REG[self.criterion](self.n_outputs_,
                                                          n_samples)
+        if is_classification:
+            breiman_shortcut = (self.n_classes_.tolist() == [2] and
+                                (isinstance(criterion, _criterion.Gini) or
+                                 isinstance(criterion, _criterion.Entropy)))
+        else:
+            breiman_shortcut = isinstance(criterion, _criterion.MSE)
 
         SPLITTERS = SPARSE_SPLITTERS if issparse(X) else DENSE_SPLITTERS
 
@@ -359,7 +365,8 @@ class BaseDecisionTree(BaseEstimator, metaclass=ABCMeta):
                                                 min_samples_leaf,
                                                 min_weight_leaf,
                                                 random_state,
-                                                self.presort)
+                                                self.presort,
+                                                breiman_shortcut)
 
         self.tree_ = Tree(self.n_features_, self.n_classes_, self.n_outputs_,
                           n_categories)
